@@ -1,0 +1,189 @@
+{
+    "dynamic": "strict",
+    "properties": {
+        "source_id": {
+            "type": "keyword"
+        },
+        "author": {
+            "type": "nested",
+            "properties": {
+                "id": {
+                    "type": "keyword"
+                },
+                "username": {
+                    "type": "text",
+                    "analyzer": "englando",
+                    "fields": {
+                        "ngram": {
+                            "type": "text",
+                            "analyzer": "custom_ngram"
+                        }
+                    }
+                },
+                "name": {
+                    "type": "text",
+                    "analyzer": "englando",
+                    "fields": {
+                        "ngram": {
+                            "type": "text",
+                            "analyzer": "custom_ngram"
+                        },
+                        "shingles": {
+                            "type": "text",
+                            "analyzer": "custom_shingles"
+                        }
+                    }
+                },
+                "description": {
+                    "type": "text",
+                    "analyzer": "englando",
+                    "fields": {
+                        "shingles": {
+                            "type": "text",
+                            "analyzer": "custom_shingles"
+                        }
+                    }
+                },
+                "followers_count": {
+                    "type": "integer"
+                },
+                "following_count": {
+                    "type": "integer"
+                },
+                "listed_count": {
+                    "type": "integer"
+                },
+                "tweet_count": {
+                    "type": "integer"
+                }
+            }
+        },
+        "content": {
+            "type": "text",
+            "analyzer": "englando"
+        },
+        "language": {
+            "type": "keyword"
+        },
+        "source": {
+            "type": "keyword"
+        },
+        "retweet_count": {
+            "type": "integer"
+        },
+        "reply_count": {
+            "type": "integer"
+        },
+        "like_count": {
+            "type": "integer"
+        },
+        "quote_count": {
+            "type": "integer"
+        },
+        "possibly_sensitive": {
+            "type": "boolean"
+        },
+        "created_at": {
+            "type": "date"
+        },
+        "hashtags": {
+            "type": "keyword",
+            "normalizer": "custom_normalizer"
+        },
+        "links": {
+            "properties": {
+                "title": {
+                    "type": "text",
+                    "analyzer": "englando"
+                },
+                "description": {
+                    "type": "text",
+                    "analyzer": "englando"
+                },
+                "url": {
+                    "type": "text",
+                    "analyzer": "englando"
+                }
+            }
+        },
+        "annotations": {
+            "properties": {
+                "value": {
+                    "type": "text",
+                    "analyzer": "englando"
+                },
+                "type": {
+                    "type": "text",
+                    "analyzer": "englando"
+                },
+                "probability": {
+                    "type": "double"
+                }
+            }
+        },
+        "context_annotations": {
+            "type": "nested",
+            "properties": {
+                "domain": {
+                    "type": "nested",
+                    "properties": {
+                        "name": {
+                            "type": "text",
+                            "analyzer": "englando"
+                        },
+                        "description": {
+                            "type": "text",
+                            "analyzer": "englando"
+                        }
+                    }
+                },
+                "entity": {
+                    "type": "nested",
+                    "properties": {
+                        "name": {
+                            "type": "text",
+                            "analyzer": "englando"
+                        },
+                        "description": {
+                            "type": "text",
+                            "analyzer": "englando"
+                        }
+                    }
+                }
+            }
+        },
+        "conversation_references": {
+            "properties": {
+                "id": {
+                    "type": "keyword"
+                },
+                "type": {
+                    "type": "text",
+                    "analyzer": "englando"
+                },
+                "hashtags": {
+                    "type": "keyword"
+                },
+                "content": {
+                    "type": "text",
+                    "analyzer": "englando"
+                },
+                "author": {
+                    "properties": {
+                        "id": {
+                            "type": "keyword"
+                        },
+                        "name": {
+                            "type": "text",
+                            "analyzer": "englando"
+                        },
+                        "username": {
+                            "type": "text",
+                            "analyzer": "englando"
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

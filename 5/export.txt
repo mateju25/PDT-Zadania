@@ -3,11 +3,10 @@ SELECT row_to_json (results)
 FROM (
 SELECT 
   basicX.*,  
-  hashtagsX.hashtags,
+  hashtagsX.*,
   linksX.*,
   annotationsX.*,
-  context_domainsX.*,
-  context_entitiesX.*,
+  context_annotationsX.*,
   conversation_referencesX.*
 FROM (
     SELECT c.id as source_id, 
@@ -31,7 +30,7 @@ FROM (
 		c.possibly_sensitive,
 		c.created_at
     FROM conversations c 
-	INNER JOIN authors a ON c.author_id = a.id 
+	INNER JOIN authors a ON c.author_id = a.id
 ) basicX LEFT JOIN LATERAL (
 		SELECT 
 		json_agg (jsonb_build_object(
@@ -43,7 +42,6 @@ FROM (
 	) linksX ON true
 	LEFT JOIN LATERAL (
 		SELECT
-		basicX.source_id as source_id,
 		json_agg(h.tag) as hashtags
 		FROM conversation_hashtags ch 
 		INNER JOIN hashtags h ON ch.hashtag_id = h.id
@@ -61,23 +59,20 @@ FROM (
 	LEFT JOIN LATERAL (
 		SELECT 
 		json_agg (jsonb_build_object(
-			'name', regexp_replace(cd.name, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' ),
-			'description',  regexp_replace(cd.description, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' )
-		)) as context_domains
+			'domain', jsonb_build_object(
+				'name', regexp_replace(cd.name, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' ),
+				'description',  regexp_replace(cd.description, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' )
+			),
+			'entity', jsonb_build_object(
+				'name', regexp_replace(ce.name, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' ),
+				'description',  regexp_replace(ce.description, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' )
+			)
+		)) as context_annotations
 		FROM context_annotations ca 
 		INNER JOIN context_domains cd ON ca.context_domain_id = cd.id
-		WHERE ca.conversation_id = basicX.source_id
-	) context_domainsX ON true
-		LEFT JOIN LATERAL (
-		SELECT 
-		json_agg (jsonb_build_object(
-			'name', regexp_replace(ce.name, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' ),
-			'description', regexp_replace(ce.description, E'[\\n\\r\\f\\u000B\\u0085\\u2028\\u2029"”]+', ' ', 'g' )
-		)) as context_entities
-		FROM context_annotations ca 
 		INNER JOIN context_entities ce ON ca.context_entity_id = ce.id
 		WHERE ca.conversation_id = basicX.source_id
-	) context_entitiesX ON true
+	) context_annotationsX ON true
 	LEFT JOIN LATERAL (
 			SELECT json_agg (jsonb_build_object(
 					'id', refe.parent_id,
