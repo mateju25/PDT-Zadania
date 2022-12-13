@@ -1,0 +1,181 @@
+{
+    "size": 0,
+    "explain": true,
+    "query": {
+        "function_score": {
+            "query": {
+                "bool": {
+                    "must": [
+                        {
+                            "multi_match": {
+                                "query": "put1n chr1stian fake jew",
+                                "type": "most_fields",
+                                "fields": [
+                                    "author.description.shingles^10",
+                                    "content^6"
+                                ],
+                                "fuzziness": "auto",
+                                "operator": "or"
+                            }
+                        },
+                        {
+                            "term": {
+                                "hashtags": "ukraine"
+                            }
+                        },
+                        {
+                            "term": {
+                                "conversation_references.content": "nazi"
+                            }
+                        }
+                    ],
+                    "filter": [
+                        {
+                            "nested": {
+                                "path": "author",
+                                "query": {
+                                    "bool": {
+                                        "must": [
+                                            {
+                                                "range": {
+                                                    "author.following_count": {
+                                                        "gt": 100
+                                                    }
+                                                }
+                                            },
+                                            {
+                                                "range": {
+                                                    "author.followers_count": {
+                                                        "gt": 100
+                                                    }
+                                                }
+                                            }
+                                        ]
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "exists": {
+                                "field": "links.url"
+                            }
+                        }
+                    ],
+                    "should": [
+                        {
+                            "nested": {
+                                "path": "context_annotations",
+                                "query": {
+                                    "nested": {
+                                        "path": "context_annotations.entity",
+                                        "query": {
+                                            "match": {
+                                                "context_annotations.entity.name": {
+                                                    "query": "Soros",
+                                                    "boost": 10
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "nested": {
+                                "path": "context_annotations",
+                                "query": {
+                                    "nested": {
+                                        "path": "context_annotations.domain",
+                                        "query": {
+                                            "match": {
+                                                "context_annotations.domain.name": {
+                                                    "query": "Person",
+                                                    "boost": 5
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "nested": {
+                                "path": "author",
+                                "query": {
+                                    "match_phrase": {
+                                        "author.description": {
+                                            "query": "put1n chr1stian fake jew",
+                                            "slop": 1,
+                                            "boost": 5
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        {
+                            "match_phrase": {
+                                "content": {
+                                    "query": "put1n chr1stian fake jew",
+                                    "slop": 1,
+                                    "boost": 5
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        }
+    },
+    "aggs": {
+        "hashtags": {
+            "date_histogram": {
+                "field": "created_at",
+                "calendar_interval": "week",
+                "format": "yyyy-MM-dd"
+            },
+            "aggs": {
+                "hashtags-stats": {
+                    "filters": {
+                        "filters": {
+                            "pro-russia": {
+                                "terms": {
+                                    "hashtags": [
+                                        "istandwithputin",
+                                        "racism",
+                                        "1trillion",
+                                        "istandwithrussia",
+                                        "isupportrussia",
+                                        "blacklivesmatter",
+                                        "racistukraine",
+                                        "africansinukraine",
+                                        "palestine",
+                                        "israel",
+                                        "freepalestine",
+                                        "istandwithpalestine",
+                                        "racisteu",
+                                        "putin"
+                                    ]
+                                }
+                            }
+                        }
+                    },
+                    "aggs": {
+                        "statistics": {
+                            "terms": {
+                                "field": "hashtags"
+                            }
+                        }
+                    }
+                },
+                "sales_bucket_filter": {
+                    "bucket_selector": {
+                        "buckets_path": {
+                            "docCount": "_count"
+                        },
+                        "script": "params.docCount > 0"
+                    }
+                }
+            }
+        }
+    }
+}
