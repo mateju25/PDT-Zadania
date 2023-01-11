@@ -6,3 +6,4 @@ Zadania, ktoré sa tu zatiaľ nachádzajú:
 3. PostGIS 
 4. Neo4j
 5. Elastic
+6. Mongo
